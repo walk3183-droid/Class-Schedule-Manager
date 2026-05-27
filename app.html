@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ClassBot Schedule Manager</title>
+  <meta name="description" content="Manage your class schedule, assignments, and study time with ClassBot AI assistant." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* =============================================
+       DASHBOARD LAYOUT
+       ============================================= */
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-rows: var(--topbar-height) 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .topbar-logo-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 12px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .topbar-logo-name {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--text-primary), var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .demo-badge {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: var(--orange);
+      border-radius: var(--radius-full);
+      padding: 2px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .topbar-clock {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-left: auto;
+    }
+
+    .topbar-clock-time {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .topbar-clock-date {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    #theme-toggle:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border);
+    }
+
+    #chat-toggle {
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      transition: var(--transition-bounce);
+    }
+    #chat-toggle:hover { transform: scale(1.08); }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 14px 5px 5px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+    .user-chip:hover { background: var(--bg-card-hover); border-color: var(--border); }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 180px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      padding: 8px;
+      z-index: 300;
+      display: none;
+    }
+    .user-chip:hover .user-dropdown { display: block; }
+    .user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+    .user-dropdown-item:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+    #signout-btn { color: var(--red) !important; }
+    #signout-btn:hover { background: rgba(239,68,68,0.1) !important; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 12px 4px;
+      margin-top: 12px;
+    }
+    .sidebar-section-label:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border-color: var(--border);
+      font-weight: 600;
+    }
+
+    .nav-item .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ── Main Area ── */
+    .main-area {
+      display: grid;
+      grid-template-columns: 1fr var(--chatbot-width);
+      overflow: hidden;
+      height: calc(100vh - var(--topbar-height));
+    }
+
+    .content-area {
+      overflow-y: auto;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Section Panels ── */
+    .section-panel { display: none; flex-direction: column; gap: 24px; }
+    .section-panel.active { display: flex; animation: fadeIn 0.3s ease; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: var(--transition);
+      backdrop-filter: blur(12px);
+    }
+    .stat-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon { font-size: 1.4rem; }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ── Dashboard Grid ── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+    }
+
+    .dash-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .dash-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .dash-card-title {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dash-card-body { padding: 16px 20px; }
+
+    /* Next class card */
+    .next-class-card { grid-column: 1 / -1; }
+    .next-class-inner { display: flex; align-items: center; gap: 20px; padding: 20px; }
+    .next-class-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .next-class-badge.in-class { animation: pulse-glow 2s ease-in-out infinite; }
+    .next-class-name { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+    .next-class-meta { font-size: 0.85rem; color: var(--text-secondary); }
+
+    /* ── Class Cards (compact) ── */
+    .class-card-compact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid;
+      background: var(--bg-input);
+      margin-bottom: 8px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .class-card-compact:last-child { margin-bottom: 0; }
+    .class-card-compact:hover { background: var(--bg-card-hover); }
+
+    .ccc-info { flex: 1; min-width: 0; }
+    .ccc-name { display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-primary); truncate; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ccc-time { display: block; font-size: 0.78rem; color: var(--text-muted); }
+    .ccc-loc  { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
+
+    /* ── Full Class Cards ── */
+    .class-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition);
+      margin-bottom: 14px;
+      animation: fadeIn 0.3s ease;
+    }
+    .class-card:last-child { margin-bottom: 0; }
+    .class-card:hover { border-color: var(--card-color, var(--border)); box-shadow: var(--shadow-md); }
+
+    .class-card-color-bar { height: 4px; width: 100%; }
+    .class-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 16px 18px 10px;
+    }
+    .class-card-actions { display: flex; gap: 6px; opacity: 0; transition: var(--transition); }
+    .class-card:hover .class-card-actions { opacity: 1; }
+    .class-name { font-size: 1rem; font-weight: 700; margin-top: 4px; }
+    .class-code { font-size: 0.72rem; }
+
+    .class-card-body { padding: 4px 18px 16px; }
+    .class-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+    .meta-item { font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+    .tz-tiny { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-left: 2px; }
+    .class-notes { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; font-style: italic; }
+
+    /* ── Assignment Cards ── */
+    .assignment-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      transition: var(--transition);
+      animation: fadeIn 0.3s ease;
+    }
+    .assignment-card:last-child { margin-bottom: 0; }
+    .assignment-card:hover { border-color: var(--border); background: var(--bg-card-hover); }
+    .assignment-card.completed { opacity: 0.55; }
+    .assignment-card.completed .asgn-title { text-decoration: line-through; }
+
+    .asgn-check-wrap { padding-top: 2px; }
+    .asgn-check { display: none; }
+    .asgn-check-label {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border-input);
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      transition: var(--transition);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .asgn-check:checked + .asgn-check-label {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .asgn-check:checked + .asgn-check-label::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .asgn-content { flex: 1; min-width: 0; }
+    .asgn-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+    .asgn-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+    .asgn-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .asgn-notes { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; font-style: italic; }
+    .asgn-group-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+
+    /* ── Weekly Schedule Grid ── */
+    .schedule-wrapper { overflow-x: auto; }
+    #schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(160px, 1fr));
+      gap: 12px;
+      min-width: 900px;
+    }
+
+    .schedule-day {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .schedule-day.today {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-glow), var(--shadow-md);
+    }
+
+    .schedule-day-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .day-name { font-weight: 700; font-size: 0.875rem; flex: 1; }
+    .today-pill {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .day-count {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .schedule-day-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+    .day-empty { font-size: 0.78rem; color: var(--text-muted); text-align: center; padding: 12px 0; }
+
+    .schedule-class-pill {
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .schedule-class-pill:hover { filter: brightness(1.15); }
+    .pill-name { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pill-time { font-size: 0.72rem; color: var(--text-secondary); }
+    .pill-loc  { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── Study Blocks ── */
+    .study-block-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .study-block-item:last-child { border-bottom: none; }
+    .study-block-icon { font-size: 1.2rem; }
+    .study-block-time { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .study-block-dur  { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── Reminders ── */
+    .reminder-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      transition: var(--transition);
+    }
+    .reminder-card:hover { background: var(--bg-card-hover); border-color: var(--border); }
+    .reminder-icon { font-size: 1.4rem; }
+    .reminder-content { flex: 1; }
+    .reminder-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+    .reminder-time { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Settings Page ── */
+    .settings-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .settings-section-title {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-form { display: flex; flex-direction: column; gap: 16px; }
+    .settings-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+
+    /* ── CLASSBOT CHAT PANEL ── */
+    #chat-panel {
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: var(--transition-slow);
+      overflow: hidden;
+    }
+
+    #chat-panel.closed {
+      width: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .chat-header-left { display: flex; align-items: center; gap: 10px; }
+
+    .chat-bot-avatar {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      flex-shrink: 0;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    .chat-bot-name { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; }
+    .chat-bot-status {
+      font-size: 0.72rem;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .chat-bot-status::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Chat bubbles */
+    .chat-bubble {
+      display: flex;
+      flex-direction: column;
+      max-width: 88%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .chat-bubble.bot {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .bubble-content {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .chat-bubble.user .bubble-content {
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble.bot .bubble-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-content p { margin: 0 0 8px; }
+    .bubble-content p:last-child { margin-bottom: 0; }
+    .bubble-content strong { color: inherit; font-weight: 700; }
+    .bubble-content em { opacity: 0.85; }
+    .bubble-content code {
+      background: rgba(0,0,0,0.15);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.85em;
+      font-family: monospace;
+    }
+
+    .bubble-time {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    /* Typing dots */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 4px 0;
+    }
+    .typing-dots span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing 1.2s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+      40%            { opacity: 1;   transform: scale(1.1); }
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .chat-quick-actions {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .quick-btn:hover {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border-color: var(--border);
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    #chat-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      padding: 10px 14px;
+      outline: none;
+      resize: none;
+      max-height: 100px;
+      transition: var(--transition);
+    }
+    #chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+    #chat-input::placeholder { color: var(--text-muted); }
+
+    #chat-send {
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      cursor: pointer;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      transition: var(--transition-bounce);
+    }
+    #chat-send:hover { transform: scale(1.08); }
+
+    .chat-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .chat-footer-hint { font-size: 0.68rem; color: var(--text-muted); }
+
+    #chat-clear {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    #chat-clear:hover { color: var(--red); }
+
+    /* ── Color Picker ── */
+    .color-picker-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .color-swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: var(--transition-bounce);
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected {
+      border-color: var(--text-primary);
+      transform: scale(1.2);
+    }
+
+    /* ── Day Checkboxes ── */
+    .day-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .day-check-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-input);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      background: var(--bg-input);
+    }
+    .day-check-label input { display: none; }
+    .day-check-label:has(input:checked) {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .day-check-label:hover { border-color: var(--accent); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+      :root { --chatbot-width: 300px; }
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      :root { --chatbot-width: 0px; }
+      .sidebar { display: none; }
+      .app-layout { grid-template-columns: 1fr; }
+      #chat-panel { position: fixed; right: 0; top: var(--topbar-height); bottom: 0; width: 320px !important; z-index: 150; }
+      #chat-panel.closed { width: 0 !important; }
+    }
+
+    @media (max-width: 600px) {
+      .content-area { padding: 16px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      #schedule-grid { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ═══ TOPBAR ═══ -->
+  <header class="topbar" role="banner">
+    <a href="app.html" class="topbar-logo" aria-label="ClassBot Home">
+      <div class="topbar-logo-icon" aria-hidden="true">🎓</div>
+      <span class="topbar-logo-name">ClassBot</span>
+    </a>
+
+    <span class="demo-badge" aria-label="Demo mode active">🎯 Demo</span>
+
+    <!-- Nav shortcut buttons (mobile) -->
+    <div style="display:flex;gap:6px;margin-left:16px;" class="topbar-nav-shortcuts">
+      <button class="btn btn-ghost btn-sm" onclick="window.openClassModal()" id="topbar-add-class">+ Class</button>
+      <button class="btn btn-ghost btn-sm" id="open-assignment-modal">+ Task</button>
+    </div>
+
+    <div class="topbar-clock" aria-live="polite" aria-label="Current time in East Africa">
+      <span class="topbar-clock-time" id="topbar-time">--:-- --</span>
+      <span class="topbar-clock-date" id="topbar-date">--- EAT</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">☀️</button>
+      <button id="chat-toggle" aria-label="Toggle ClassBot chat" title="Open ClassBot">💬</button>
+
+      <div class="user-chip" role="button" tabindex="0" aria-haspopup="true" aria-label="User menu">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <span class="user-name" id="user-name">Student</span>
+        <div class="user-dropdown" role="menu">
+          <div class="user-dropdown-item" onclick="switchSection('settings')" role="menuitem">⚙️ Settings</div>
+          <div class="user-dropdown-item" id="signout-btn" role="menuitem">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-section-label">Main</div>
+
+    <div class="nav-item active" data-section="dashboard" role="button" tabindex="0" aria-label="Dashboard">
+      <span class="nav-icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-item" data-section="schedule" role="button" tabindex="0" aria-label="Weekly Schedule">
+      <span class="nav-icon">📅</span> Weekly Schedule
+    </div>
+
+    <div class="sidebar-section-label">Classes</div>
+
+    <div class="nav-item" data-section="classes" role="button" tabindex="0" aria-label="All Classes"
+      onclick="switchSection('classes');renderClassesPage()">
+      <span class="nav-icon">📚</span> All Classes
+      <span class="nav-badge" id="stat-total">0</span>
+    </div>
+    <div class="nav-item" data-section="assignments" role="button" tabindex="0" aria-label="Assignments">
+      <span class="nav-icon">📝</span> Assignments
+      <span class="nav-badge" id="stat-pending">0</span>
+    </div>
+    <div class="nav-item" data-section="reminders" role="button" tabindex="0" aria-label="Reminders">
+      <span class="nav-icon">🔔</span> Reminders
+    </div>
+
+    <div class="sidebar-section-label">Account</div>
+
+    <div class="nav-item" data-section="settings" role="button" tabindex="0" aria-label="Settings">
+      <span class="nav-icon">⚙️</span> Settings
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="nav-item" onclick="window.openClassModal()" style="color:var(--accent);border-color:var(--border);" role="button" tabindex="0" id="sidebar-add-class">
+        <span class="nav-icon">➕</span> Add Class
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN + CHATBOT ═══ -->
+  <div class="main-area">
+
+    <!-- Content -->
+    <main class="content-area" role="main" id="main-content">
+
+      <!-- ── STATS ROW ── -->
+      <div class="stats-row" role="list" aria-label="Schedule statistics">
+        <div class="stat-card" role="listitem">
+          <span class="stat-icon">📅</span>
+          <span class="stat-value" id="stat-today">0</span>
+          <span class="stat-label">Classes Today</span>
+        </div>
+        <div class="stat-card" role="listitem">
+          <span class="stat-icon">📚</span>
+          <span class="stat-value">-</span>
+          <span class="stat-label">Total Classes</span>
+        </div>
+        <div class="stat-card" role="listitem">
+          <span class="stat-icon">📝</span>
+          <span class="stat-value">-</span>
+          <span class="stat-label">Pending Tasks</span>
+        </div>
+        <div class="stat-card" role="listitem">
+          <span class="stat-icon">⚠️</span>
+          <span class="stat-value" id="stat-overdue">0</span>
+          <span class="stat-label">Overdue</span>
+        </div>
+        <div class="stat-card" role="listitem">
+          <span class="stat-icon">⏰</span>
+          <span class="stat-value" id="stat-upcoming">0</span>
+          <span class="stat-label">Due This Week</span>
+        </div>
+      </div>
+
+      <!-- ════ DASHBOARD SECTION ════ -->
+      <section class="section-panel active" id="section-dashboard" aria-labelledby="dash-title">
+
+        <!-- Next Class Banner -->
+        <div class="dash-card next-class-card">
+          <div class="next-class-inner" id="next-class-info">
+            <div class="empty-state"><div class="empty-state-icon">📅</div><h3>Loading...</h3></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+
+          <!-- Today's Classes -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">📅 Today's Classes</div>
+              <button class="btn btn-ghost btn-sm" onclick="switchSection('schedule')">View All</button>
+            </div>
+            <div class="dash-card-body" id="today-classes-list">
+              <div class="skeleton" style="height:60px;margin-bottom:8px"></div>
+              <div class="skeleton" style="height:60px"></div>
+            </div>
+          </div>
+
+          <!-- Study Blocks -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">💡 Study Blocks Today</div>
+              <span class="badge badge-cyan">EAT</span>
+            </div>
+            <div class="dash-card-body" id="study-blocks">
+              <div class="skeleton" style="height:50px"></div>
+            </div>
+          </div>
+
+          <!-- Upcoming Deadlines -->
+          <div class="dash-card" style="grid-column: 1 / -1;">
+            <div class="dash-card-header">
+              <div class="dash-card-title">⏰ Upcoming Deadlines</div>
+              <button class="btn btn-ghost btn-sm" id="open-assignment-modal">+ Add Task</button>
+            </div>
+            <div class="dash-card-body" id="upcoming-deadlines">
+              <div class="skeleton" style="height:60px;margin-bottom:8px"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ════ SCHEDULE SECTION ════ -->
+      <section class="section-panel" id="section-schedule" aria-labelledby="schedule-title">
+        <div class="section-header">
+          <h1 class="section-title" id="schedule-title">📅 Weekly Schedule</h1>
+          <button class="btn btn-primary btn-sm" onclick="window.openClassModal()" id="add-class-btn">+ Add Class</button>
+        </div>
+        <div class="schedule-wrapper">
+          <div id="schedule-grid">
+            <div class="empty-state" style="grid-column:1/-1">
+              <div class="empty-state-icon">📅</div>
+              <h3>Loading schedule…</h3>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ CLASSES SECTION ════ -->
+      <section class="section-panel" id="section-classes" aria-labelledby="classes-title">
+        <div class="section-header">
+          <h1 class="section-title" id="classes-title">📚 All Classes</h1>
+          <button class="btn btn-primary btn-sm" onclick="window.openClassModal()">+ Add Class</button>
+        </div>
+        <div id="classes-list">
+          <div class="skeleton" style="height:120px;margin-bottom:12px"></div>
+          <div class="skeleton" style="height:120px"></div>
+        </div>
+      </section>
+
+      <!-- ════ ASSIGNMENTS SECTION ════ -->
+      <section class="section-panel" id="section-assignments" aria-labelledby="asgn-title">
+        <div class="section-header">
+          <h1 class="section-title" id="asgn-title">📝 Assignments</h1>
+          <button class="btn btn-primary btn-sm" id="open-assignment-modal">+ Add Assignment</button>
+        </div>
+        <div id="assignments-list">
+          <div class="skeleton" style="height:80px;margin-bottom:10px"></div>
+          <div class="skeleton" style="height:80px"></div>
+        </div>
+      </section>
+
+      <!-- ════ REMINDERS SECTION ════ -->
+      <section class="section-panel" id="section-reminders" aria-labelledby="rem-title">
+        <div class="section-header">
+          <h1 class="section-title" id="rem-title">🔔 Reminders</h1>
+          <button class="btn btn-primary btn-sm" onclick="openModal('reminder-modal-overlay')">+ Add Reminder</button>
+        </div>
+        <div id="reminders-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔔</div>
+            <h3>No reminders yet</h3>
+            <p>Add reminders to stay on top of your classes and deadlines.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ SETTINGS SECTION ════ -->
+      <section class="section-panel" id="section-settings" aria-labelledby="settings-title">
+        <h1 class="section-title" id="settings-title">⚙️ Settings</h1>
+
+        <form id="settings-form" class="settings-form" aria-label="App settings">
+
+          <div class="settings-section">
+            <div class="settings-section-title">🗄️ Supabase Database</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="form-group">
+                <label class="form-label" for="settings-supa-url">Supabase Project URL</label>
+                <input class="form-input" type="url" id="settings-supa-url" placeholder="https://xxxx.supabase.co" />
+                <p class="settings-hint">Your Supabase project URL. Found in Project Settings → API.</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="settings-supa-key">Supabase Anon Key</label>
+                <input class="form-input" type="password" id="settings-supa-key" placeholder="eyJhbGci..." />
+                <p class="settings-hint">Public anon key for your project. Enables cloud sync across devices.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🤖 Gemini AI (ClassBot)</div>
+            <div class="form-group">
+              <label class="form-label" for="settings-gemini-key">Google Gemini API Key</label>
+              <input class="form-input" type="password" id="settings-gemini-key" placeholder="AIzaSy..." />
+              <p class="settings-hint">Powers ClassBot's natural language understanding. Get a free key at <strong>aistudio.google.com</strong>. Without this, ClassBot uses smart rule-based responses.</p>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🌍 Timezone & Academic</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group">
+                <label class="form-label">Timezone</label>
+                <input class="form-input" type="text" value="East African Time (EAT / UTC+3)" readonly style="cursor:not-allowed;opacity:0.7" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Academic System</label>
+                <input class="form-input" type="text" value="Semester" readonly style="cursor:not-allowed;opacity:0.7" />
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🗑️ Danger Zone</div>
+            <p class="settings-hint" style="margin-bottom:14px">These actions cannot be undone.</p>
+            <button type="button" class="btn btn-danger btn-sm" id="settings-clear-btn">🗑️ Clear All Data</button>
+          </div>
+
+          <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+        </form>
+      </section>
+
+    </main>
+
+    <!-- ═══ CLASSBOT CHAT PANEL ═══ -->
+    <aside id="chat-panel" aria-label="ClassBot AI Assistant" role="complementary">
+
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-bot-avatar" aria-hidden="true">🤖</div>
+          <div>
+            <div class="chat-bot-name">ClassBot</div>
+            <div class="chat-bot-status">Online · EAT</div>
+          </div>
+        </div>
+        <button id="chat-clear" title="Clear chat history" aria-label="Clear chat history">🗑️ Clear</button>
+      </div>
+
+      <!-- Messages -->
+      <div id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+
+      <!-- Input Area -->
+      <div class="chat-input-area">
+        <!-- Quick Actions -->
+        <div class="chat-quick-actions" role="group" aria-label="Quick actions">
+          <button class="quick-btn" onclick="document.getElementById('chat-input').value='What are my classes today?';document.getElementById('chat-send').click()">Today</button>
+          <button class="quick-btn" onclick="document.getElementById('chat-input').value='When is my next class?';document.getElementById('chat-send').click()">Next class</button>
+          <button class="quick-btn" onclick="document.getElementById('chat-input').value='What assignments are due soon?';document.getElementById('chat-send').click()">Deadlines</button>
+          <button class="quick-btn" onclick="document.getElementById('chat-input').value='Suggest study blocks for today';document.getElementById('chat-send').click()">Study time</button>
+        </div>
+
+        <div class="chat-input-row">
+          <textarea id="chat-input" rows="1" placeholder="Ask ClassBot anything… (Ctrl+K)"
+            aria-label="Message ClassBot"></textarea>
+          <button id="chat-send" aria-label="Send message">➤</button>
+        </div>
+
+        <div class="chat-footer">
+          <span class="chat-footer-hint">Enter to send · Shift+Enter for new line</span>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /main-area -->
+
+</div><!-- /app-layout -->
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════
+     MODALS
+     ═══════════════════════════════════ -->
+
+<!-- ── Add/Edit Class Modal ── -->
+<div class="modal-overlay" id="class-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="class-modal-title">
+  <div class="modal" id="class-modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="class-modal-title">Add New Class</h2>
+      <button class="modal-close" aria-label="Close modal">✕</button>
+    </div>
+
+    <form id="class-form" autocomplete="off">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="class-name">Class Name *</label>
+            <input class="form-input" type="text" id="class-name" placeholder="Introduction to Computer Science" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="class-code">Course Code</label>
+            <input class="form-input" type="text" id="class-code" placeholder="CS101" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="class-instructor">Instructor</label>
+            <input class="form-input" type="text" id="class-instructor" placeholder="Dr. Abebe Girma" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="class-location">Location / Room</label>
+            <input class="form-input" type="text" id="class-location" placeholder="Block A — Room 201" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="class-start">Start Time (EAT) *</label>
+            <input class="form-input" type="time" id="class-start" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="class-end">End Time (EAT) *</label>
+            <input class="form-input" type="time" id="class-end" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Days *</label>
+          <div class="day-checkboxes">
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Monday" />Mon</label>
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Tuesday" />Tue</label>
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Wednesday" />Wed</label>
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Thursday" />Thu</label>
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Friday" />Fri</label>
+            <label class="day-check-label"><input type="checkbox" class="day-checkbox" value="Saturday" />Sat</label>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="class-recurring">Recurring</label>
+            <select class="form-select" id="class-recurring">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Bi-weekly</option>
+              <option value="daily">Daily</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="class-color">Color</label>
+            <select class="form-select" id="class-color">
+              <option value="purple">Purple</option>
+              <option value="cyan">Cyan</option>
+              <option value="green">Green</option>
+              <option value="orange">Amber</option>
+              <option value="pink">Pink</option>
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="teal">Teal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="class-notes">Notes</label>
+          <textarea class="form-textarea" id="class-notes" placeholder="e.g. Bring laptop every session, online via Zoom…" style="min-height:70px"></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary modal-close-btn" onclick="document.getElementById('class-modal-overlay').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="class-submit-btn">💾 Save Class</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Add Assignment Modal ── -->
+<div class="modal-overlay" id="assignment-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="asgn-modal-title">
+  <div class="modal" id="assignment-modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="asgn-modal-title">Add Assignment</h2>
+      <button class="modal-close" aria-label="Close modal">✕</button>
+    </div>
+
+    <form id="assignment-form" autocomplete="off">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <div class="form-group">
+          <label class="form-label" for="asgn-title">Assignment Title *</label>
+          <input class="form-input" type="text" id="asgn-title" placeholder="Algorithm Analysis Report" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="asgn-class">Class</label>
+          <select class="form-select" id="asgn-class">
+            <option value="">— Select Class —</option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="asgn-due">Due Date *</label>
+            <input class="form-input" type="datetime-local" id="asgn-due" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="asgn-priority">Priority</label>
+            <select class="form-select" id="asgn-priority">
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="asgn-hours">Estimated Hours</label>
+          <input class="form-input" type="number" id="asgn-hours" placeholder="e.g. 3" min="0" step="0.5" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="asgn-notes">Notes</label>
+          <textarea class="form-textarea" id="asgn-notes" placeholder="Additional details…" style="min-height:70px"></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('assignment-modal-overlay').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn btn-primary">📝 Add Assignment</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Add Reminder Modal ── -->
+<div class="modal-overlay" id="reminder-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rem-modal-title">
+  <div class="modal" id="reminder-modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="rem-modal-title">Add Reminder</h2>
+      <button class="modal-close" aria-label="Close modal">✕</button>
+    </div>
+    <form id="reminder-form" autocomplete="off">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group">
+          <label class="form-label" for="rem-title">Reminder Title *</label>
+          <input class="form-input" type="text" id="rem-title" placeholder="Review notes for CS101" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rem-datetime">Date & Time (EAT) *</label>
+          <input class="form-input" type="datetime-local" id="rem-datetime" required />
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('reminder-modal-overlay').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn btn-primary">🔔 Set Reminder</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/classbot.js"></script>
+
+<script>
+  // ── Fix "All Classes" nav item click ──
+  document.querySelector('[data-section="classes"]').addEventListener('click', () => {
+    switchSection('classes');
+  });
+
+  // Fix switchSection global
+  function switchSection(section) {
+    const panels = document.querySelectorAll('.section-panel');
+    const navItems = document.querySelectorAll('.nav-item');
+    panels.forEach(p => p.classList.remove('active'));
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.section === section));
+    const target = document.getElementById(`section-${section}`);
+    if (target) target.classList.add('active');
+  }
+
+  function renderClassesPage() {
+    // Delegated to app.js
+    if (window._renderClassesPage) window._renderClassesPage();
+  }
+
+  // Reminder form
+  document.getElementById('reminder-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title    = document.getElementById('rem-title').value.trim();
+    const fireAt   = new Date(document.getElementById('rem-datetime').value).toISOString();
+    if (!title) return;
+    const result = await CSMDb.addReminder({ title, fireAt });
+    if (result.success) {
+      window.showToast?.(`Reminder set for "${title}" ⏰`, 'success');
+      document.getElementById('reminder-modal-overlay').classList.remove('open');
+      document.getElementById('reminder-form').reset();
+    }
+  });
+
+  // Modal close listeners
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('open'));
+  });
+
+  // open-assignment-modal buttons
+  document.querySelectorAll('#open-assignment-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('assignment-modal-overlay').classList.add('open');
+    });
+  });
+
+  window.openModal = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+  };
+</script>
+
+<script src="js/app.js"></script>
+</body>
+</html>

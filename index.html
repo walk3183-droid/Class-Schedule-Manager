@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClassBot — Class Schedule Manager</title>
+  <meta name="description" content="Intelligent class schedule manager with ClassBot AI assistant. Organize, plan, and optimize your academic semester with ease." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Landing Page Specific ── */
+    .landing-body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Animated Background ── */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #7c3aed, transparent);
+      top: -150px; left: -150px;
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #06b6d4, transparent);
+      bottom: -100px; right: -100px;
+      animation-delay: -3s;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, #ec4899, transparent);
+      top: 40%; left: 60%;
+      animation-delay: -5s;
+      opacity: 0.2;
+    }
+
+    [data-theme="light"] .orb { opacity: 0.18; }
+
+    /* ── Grid Pattern ── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.03;
+      background-image:
+        linear-gradient(var(--accent) 1px, transparent 1px),
+        linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    [data-theme="light"] .bg-grid { opacity: 0.06; }
+
+    /* ── Theme Toggle (top-right) ── */
+    .theme-toggle-landing {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 100;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+    }
+    .theme-toggle-landing:hover {
+      background: var(--bg-card-hover);
+      color: var(--accent);
+      border-color: var(--border);
+    }
+
+    /* ── Main Container ── */
+    .landing-container {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      max-width: 1100px;
+      width: 100%;
+      padding: 40px 32px;
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+      animation: slideInLeft 0.7s ease forwards;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--accent-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--purple-light);
+      margin-bottom: 24px;
+    }
+
+    .hero-badge .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-glow 2s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .feature-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-subtle);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Auth Card ── */
+    .auth-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+      animation: slideInRight 0.7s ease forwards;
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .auth-logo-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .auth-logo-text {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--text-primary), var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Tab Switcher ── */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--accent), var(--purple-dark));
+      color: #fff;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    /* ── Auth Form ── */
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .auth-form.hidden { display: none; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .input-wrapper {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+    .input-wrapper .form-input {
+      padding-left: 40px;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      margin: 4px 0;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .demo-btn {
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .demo-btn:hover {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .auth-footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ── Clock Badge ── */
+    .eat-clock {
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      z-index: 100;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 8px 18px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .eat-clock .tz-label {
+      background: var(--accent-subtle);
+      color: var(--purple-light);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .landing-container {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+      }
+      .hero { display: none; }
+      .auth-card { animation: fadeIn 0.7s ease forwards; }
+    }
+
+    @media (max-width: 520px) {
+      .auth-card { padding: 28px 22px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="landing-body">
+
+  <!-- Background -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- EAT Clock -->
+  <div class="eat-clock" id="landing-clock" aria-label="Current time in East Africa">
+    <span>🕐</span>
+    <span id="landing-time">--:-- --</span>
+    <span class="tz-label">EAT</span>
+  </div>
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle-landing" id="theme-toggle-btn" aria-label="Toggle dark/light mode">
+    <span id="theme-icon">☀️</span>
+    <span id="theme-label">Light Mode</span>
+  </button>
+
+  <!-- Main Content -->
+  <main class="landing-container" role="main">
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-badge">
+        <span class="dot" aria-hidden="true"></span>
+        AI-Powered Academic Assistant
+      </div>
+
+      <h1 class="hero-title" id="hero-title">
+        Your Semester,<br/>Perfectly Organized
+      </h1>
+
+      <p class="hero-sub">
+        ClassBot intelligently manages your class schedule, tracks assignments,
+        sends smart reminders, and helps you find the best study blocks — all in East African Time.
+      </p>
+
+      <div class="hero-features" role="list">
+        <div class="feature-item" role="listitem">
+          <div class="feature-icon" aria-hidden="true">📅</div>
+          <span>Visual weekly & semester calendar view</span>
+        </div>
+        <div class="feature-item" role="listitem">
+          <div class="feature-icon" aria-hidden="true">🤖</div>
+          <span>ClassBot AI assistant for smart scheduling</span>
+        </div>
+        <div class="feature-item" role="listitem">
+          <div class="feature-icon" aria-hidden="true">🔔</div>
+          <span>Reminders & deadline alerts in EAT timezone</span>
+        </div>
+        <div class="feature-item" role="listitem">
+          <div class="feature-icon" aria-hidden="true">⚡</div>
+          <span>Conflict detection & study block suggestions</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Auth Card -->
+    <section class="auth-card" aria-label="Sign in or create account">
+      <div class="auth-logo">
+        <div class="auth-logo-icon" aria-hidden="true">🎓</div>
+        <div>
+          <div class="auth-logo-text">ClassBot</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:1px;">Schedule Manager</div>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs" role="tablist" aria-label="Authentication tabs">
+        <button class="auth-tab active" id="tab-login" role="tab" aria-selected="true" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="login-form" aria-label="Sign in form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">✉️</span>
+            <input class="form-input" type="email" id="login-email" name="email"
+              placeholder="you@university.edu" autocomplete="email" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">🔒</span>
+            <input class="form-input" type="password" id="login-password" name="password"
+              placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full" id="login-btn">
+          <span id="login-btn-text">Sign In</span>
+          <span id="login-spinner" class="spinner" style="display:none;width:16px;height:16px;"></span>
+        </button>
+
+        <div class="auth-divider">or continue as</div>
+
+        <button type="button" class="demo-btn" id="demo-btn" onclick="enterDemoMode()">
+          🎯 Demo Mode — No account needed
+        </button>
+
+        <p class="auth-footer">
+          By signing in, you agree to keep your schedule organized 📚
+        </p>
+      </form>
+
+      <!-- Signup Form -->
+      <form class="auth-form hidden" id="signup-form" aria-label="Create account form" onsubmit="handleSignup(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="signup-fname">First Name</label>
+            <input class="form-input" type="text" id="signup-fname" name="firstName"
+              placeholder="Helen" autocomplete="given-name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-lname">Last Name</label>
+            <input class="form-input" type="text" id="signup-lname" name="lastName"
+              placeholder="Tesfaye" autocomplete="family-name" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-email">University Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">✉️</span>
+            <input class="form-input" type="email" id="signup-email" name="email"
+              placeholder="you@university.edu" autocomplete="email" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-institution">Institution / University</label>
+          <input class="form-input" type="text" id="signup-institution" name="institution"
+            placeholder="Addis Ababa University" autocomplete="organization" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Create Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">🔒</span>
+            <input class="form-input" type="password" id="signup-password" name="password"
+              placeholder="Min. 8 characters" autocomplete="new-password" required minlength="8" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-semester">Current Semester</label>
+          <select class="form-select" id="signup-semester" name="semester">
+            <option value="1">Semester 1 — Year 1</option>
+            <option value="2">Semester 2 — Year 1</option>
+            <option value="3">Semester 1 — Year 2</option>
+            <option value="4">Semester 2 — Year 2</option>
+            <option value="5">Semester 1 — Year 3</option>
+            <option value="6">Semester 2 — Year 3</option>
+            <option value="7">Semester 1 — Year 4</option>
+            <option value="8">Semester 2 — Year 4</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full" id="signup-btn">
+          <span id="signup-btn-text">Create Account</span>
+          <span id="signup-spinner" class="spinner" style="display:none;width:16px;height:16px;"></span>
+        </button>
+
+        <div class="auth-divider">or</div>
+
+        <button type="button" class="demo-btn" onclick="enterDemoMode()">
+          🎯 Demo Mode — Try without account
+        </button>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    // ── EAT Clock ──
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', {
+        timeZone: 'Africa/Nairobi',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      const el = document.getElementById('landing-time');
+      if (el) el.textContent = timeStr;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ── Theme Toggle ──
+    const savedTheme = localStorage.getItem('csm_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeButton(savedTheme);
+
+    function updateThemeButton(theme) {
+      const icon  = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-label');
+      if (!icon || !label) return;
+      if (theme === 'dark') {
+        icon.textContent  = '☀️';
+        label.textContent = 'Light Mode';
+      } else {
+        icon.textContent  = '🌙';
+        label.textContent = 'Dark Mode';
+      }
+    }
+
+    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('csm_theme', next);
+      updateThemeButton(next);
+    });
+
+    // ── Tab Switcher ──
+    function switchTab(tab) {
+      const loginForm  = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const tabLogin   = document.getElementById('tab-login');
+      const tabSignup  = document.getElementById('tab-signup');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        tabLogin.classList.add('active');
+        tabLogin.setAttribute('aria-selected', 'true');
+        tabSignup.classList.remove('active');
+        tabSignup.setAttribute('aria-selected', 'false');
+      } else {
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        tabSignup.classList.add('active');
+        tabSignup.setAttribute('aria-selected', 'true');
+        tabLogin.classList.remove('active');
+        tabLogin.setAttribute('aria-selected', 'false');
+      }
+    }
+
+    // ── Auth Handlers ──
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const txt = document.getElementById('login-btn-text');
+      const spn = document.getElementById('login-spinner');
+      btn.disabled = true;
+      txt.style.display = 'none';
+      spn.style.display = 'inline-block';
+
+      const email    = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const result = await CSMDb.signIn(email, password);
+        if (result.success) {
+          showToast('Welcome back! Redirecting…', 'success');
+          setTimeout(() => { window.location.href = 'app.html'; }, 800);
+        } else {
+          showToast(result.error || 'Login failed. Check your credentials.', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error. Try demo mode.', 'error');
+      }
+
+      btn.disabled = false;
+      txt.style.display = 'inline';
+      spn.style.display = 'none';
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const btn = document.getElementById('signup-btn');
+      const txt = document.getElementById('signup-btn-text');
+      const spn = document.getElementById('signup-spinner');
+      btn.disabled = true;
+      txt.style.display = 'none';
+      spn.style.display = 'inline-block';
+
+      const email       = document.getElementById('signup-email').value;
+      const password    = document.getElementById('signup-password').value;
+      const firstName   = document.getElementById('signup-fname').value;
+      const lastName    = document.getElementById('signup-lname').value;
+      const institution = document.getElementById('signup-institution').value;
+      const semester    = document.getElementById('signup-semester').value;
+
+      try {
+        const result = await CSMDb.signUp(email, password, {
+          firstName, lastName, institution, semester
+        });
+        if (result.success) {
+          showToast('Account created! Welcome to ClassBot 🎓', 'success');
+          setTimeout(() => { window.location.href = 'app.html'; }, 900);
+        } else {
+          showToast(result.error || 'Could not create account.', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error. Try demo mode.', 'error');
+      }
+
+      btn.disabled = false;
+      txt.style.display = 'inline';
+      spn.style.display = 'none';
+    }
+
+    function enterDemoMode() {
+      localStorage.setItem('csm_demo', 'true');
+      localStorage.setItem('csm_user', JSON.stringify({
+        id: 'demo-user',
+        firstName: 'Helen',
+        lastName: 'Demo',
+        email: 'demo@classbot.app',
+        institution: 'Demo University',
+        semester: 3,
+        demo: true
+      }));
+      showToast('Welcome to Demo Mode! 🎯', 'info');
+      setTimeout(() => { window.location.href = 'app.html'; }, 700);
+    }
+
+    // ── Toast ──
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
